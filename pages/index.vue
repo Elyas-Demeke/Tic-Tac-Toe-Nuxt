@@ -16,13 +16,161 @@ const handleClick = (i: number) => {
   turn.value += 1;
 
   // simulate AI move
-  setTimeout(aiMove, 500);
+  setTimeout(aiMove, 100);
 };
 
 const aiMove = () => {
   let x = -1,
     y = -1;
 
+  // try to win
+  for (let i = 0; i < 3; i++) {
+    /* try row winning */
+    let index = aboutToWin(game.value[i], turn.value % 2);
+    if (index !== -1 && !gameOver.value) {
+      game.value[i][index] = turn.value % 2;
+      turn.value += 1;
+      return;
+    }
+    /* try column winning */
+    index = aboutToWin(
+      [game.value[0][i], game.value[1][i], game.value[2][i]],
+      turn.value % 2
+    );
+    if (index !== -1 && !gameOver.value) {
+      game.value[index][i] = turn.value % 2;
+      turn.value += 1;
+      return;
+    }
+  }
+
+  /* try diagonal winning */
+  const diagonal = [
+    [0, 0],
+    [1, 1],
+    [2, 2],
+  ];
+  let index = aboutToWin(
+    [game.value[0][0], game.value[1][1], game.value[2][2]],
+    turn.value % 2
+  );
+  if (index !== -1 && !gameOver.value) {
+    game.value[diagonal[index][0]][diagonal[index][1]] = turn.value % 2;
+    turn.value += 1;
+    return;
+  }
+
+  /* try reverse diagonal winning */
+  const reverseDiagonal = [
+    [0, 2],
+    [1, 1],
+    [2, 0],
+  ];
+  index = aboutToWin(
+    [game.value[0][2], game.value[1][1], game.value[2][0]],
+    turn.value % 2
+  );
+  if (index !== -1 && !gameOver.value) {
+    game.value[reverseDiagonal[index][0]][reverseDiagonal[index][1]] =
+      turn.value % 2;
+    turn.value += 1;
+    return;
+  }
+
+  // ======================================================================================
+
+  // block the player from winning
+  for (let i = 0; i < 3; i++) {
+    /* block row winning */
+    let index = aboutToWin(game.value[i], turn.value % 2 ? 0 : 1);
+    if (index !== -1 && !gameOver.value) {
+      game.value[i][index] = turn.value % 2;
+      turn.value += 1;
+      return;
+    }
+    /* block column winning */
+    index = aboutToWin(
+      [game.value[0][i], game.value[1][i], game.value[2][i]],
+      turn.value % 2 ? 0 : 1
+    );
+    if (index !== -1 && !gameOver.value) {
+      game.value[index][i] = turn.value % 2;
+      turn.value += 1;
+      return;
+    }
+  }
+
+  /* block diagonal winning */
+  index = aboutToWin(
+    [game.value[0][0], game.value[1][1], game.value[2][2]],
+    turn.value % 2 ? 0 : 1
+  );
+  if (index !== -1 && !gameOver.value) {
+    game.value[diagonal[index][0]][diagonal[index][1]] = turn.value % 2;
+    turn.value += 1;
+    return;
+  }
+
+  /* block reverse diagonal winning */
+  index = aboutToWin(
+    [game.value[0][2], game.value[1][1], game.value[2][0]],
+    turn.value % 2 ? 0 : 1
+  );
+  if (index !== -1 && !gameOver.value) {
+    game.value[reverseDiagonal[index][0]][reverseDiagonal[index][1]] =
+      turn.value % 2;
+    turn.value += 1;
+    return;
+  }
+
+  // ======================================================================================
+
+  // try setting up a win
+  for (let i = 0; i < 3; i++) {
+    /* try row setup */
+    let index = setup(game.value[i], turn.value % 2);
+    if (index !== -1 && !gameOver.value) {
+      game.value[i][index] = turn.value % 2;
+      turn.value += 1;
+      return;
+    }
+    /* try column setup */
+    index = setup(
+      [game.value[0][i], game.value[1][i], game.value[2][i]],
+      turn.value % 2
+    );
+    if (index !== -1 && !gameOver.value) {
+      game.value[index][i] = turn.value % 2;
+      turn.value += 1;
+      return;
+    }
+  }
+
+  /* try diagonal setup */
+  index = setup(
+    [game.value[0][0], game.value[1][1], game.value[2][2]],
+    turn.value % 2
+  );
+  if (index !== -1 && !gameOver.value) {
+    game.value[diagonal[index][0]][diagonal[index][1]] = turn.value % 2;
+    turn.value += 1;
+    return;
+  }
+
+  /* try reverse diagonal setup */
+  index = setup(
+    [game.value[0][2], game.value[1][1], game.value[2][0]],
+    turn.value % 2
+  );
+  if (index !== -1 && !gameOver.value) {
+    game.value[reverseDiagonal[index][0]][reverseDiagonal[index][1]] =
+      turn.value % 2;
+    turn.value += 1;
+    return;
+  }
+  // ======================================================================================
+
+  // Place at the first opening
   game.value.find((row, i) =>
     row.find((val, j) => {
       if (val === -1) {
@@ -34,7 +182,7 @@ const aiMove = () => {
     })
   );
   if (x !== -1 && y !== -1 && !gameOver.value)
-    game.value[x][y] = turn.value % 2 ? 1 : 0;
+    game.value[x][y] = turn.value % 2;
   turn.value += 1;
 };
 
@@ -128,9 +276,6 @@ const restartGame = () => {
         Restart
       </button>
     </div>
-    <div v-if="gameStatus" class="flex w-48 bg-green-400 rounded-md px-3 py-2">
-      <p>{{ gameStatus }}</p>
-    </div>
     <div class="grid grid-cols-3 w-36">
       <BoxCell
         v-for="(_, index) in 9"
@@ -140,6 +285,9 @@ const restartGame = () => {
         :gameOver="gameOver"
         :angle="getAngle(index)"
       />
+    </div>
+    <div v-if="gameStatus" class="flex w-48 bg-green-400 rounded-md px-3 py-2">
+      <p>{{ gameStatus }}</p>
     </div>
   </div>
 </template>
