@@ -34,6 +34,7 @@ const active = computed(() => {
   if (model.value === -1) return "";
   if (model.value === 0) return "O";
   if (model.value === 1) return "X";
+  return ""
 });
 
 const model = computed({

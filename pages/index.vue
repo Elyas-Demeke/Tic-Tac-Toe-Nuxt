@@ -280,10 +280,10 @@ const restartGame = () => {
       <BoxCell
         v-for="(_, index) in 9"
         :key="index"
-        @click="handleClick(index)"
         v-model="game[Math.floor(index / 3)][index % 3]"
-        :gameOver="gameOver"
+        :game-over="gameOver"
         :angle="getAngle(index)"
+        @click="handleClick(index)"
       />
     </div>
     <div v-if="gameStatus" class="flex w-48 bg-green-400 rounded-md px-3 py-2">
